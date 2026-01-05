@@ -3,6 +3,38 @@ entries:
   argocd:
   - apiVersion: v2
     appVersion: latest
+    created: "2026-01-05T06:32:18.217262949Z"
+    dependencies:
+    - condition: argocd.enabled
+      name: argo-cd
+      repository: https://argoproj.github.io/argo-helm
+      version: 9.2.4
+    - condition: rollouts.enabled
+      name: argo-rollouts
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.40.5
+    description: A Helm chart for deploying ArgoCD on Kubernetes
+    digest: fce17dd09b9b63bd905451b8dfb61bb4e6e70ffe88199ee25ef2a668a8111480
+    home: https://github.com/k8sforge/argocd-chart
+    icon: https://avatars.githubusercontent.com/u/30269780
+    keywords:
+    - argocd
+    - gitops
+    - continuous-delivery
+    - kubernetes
+    maintainers:
+    - name: k8sforge
+    name: argocd
+    sources:
+    - https://github.com/argoproj/argo-cd
+    - https://github.com/argoproj/argo-helm
+    - https://github.com/k8sforge/argocd-chart
+    type: application
+    urls:
+    - https://github.com/k8sforge/argocd-chart/releases/download/argocd-0.1.3/argocd-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: latest
     created: "2026-01-05T00:35:26.004582751Z"
     dependencies:
     - condition: argocd.enabled
@@ -33,4 +65,4 @@ entries:
     urls:
     - https://github.com/k8sforge/argocd-chart/releases/download/argocd-0.1.1/argocd-0.1.1.tgz
     version: 0.1.1
-generated: "2026-01-05T00:35:26.004591167Z"
+generated: "2026-01-05T06:32:18.217272854Z"
