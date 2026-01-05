@@ -44,6 +44,9 @@ spec:
         - -c
         - |
           set -e
+          # Install kubectl
+          apk add --no-cache kubectl
+
           echo "Applying Rollout configuration to ArgoCD ConfigMap..."
 
           # Wait for official argo-cd chart to create argocd-cm ConfigMap
