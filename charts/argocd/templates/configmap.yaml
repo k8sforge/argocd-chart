@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: argocd-cm-rollout-patch
+  name: argocd-rollout-config
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "argocd.labels" . | nindent 4 }}
@@ -33,11 +33,12 @@ spec:
         {{- include "argocd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: rollout-config
     spec:
-      serviceAccountName: default
+      serviceAccountName: rollout-config-hook
       restartPolicy: OnFailure
       containers:
       - name: kubectl
-        image: bitnami/kubectl:latest
+        image: {{ .Values.rollouts.kubectlImage.repository }}:{{ .Values.rollouts.kubectlImage.tag }}
+        imagePullPolicy: {{ .Values.rollouts.kubectlImage.pullPolicy }}
         command:
         - /bin/sh
         - -c
@@ -51,16 +52,16 @@ spec:
             sleep 2
           done
 
-          # Get the rollout patch data
-          kubectl get configmap argocd-cm-rollout-patch -n {{ .Release.Namespace }} -o yaml > /tmp/rollout-patch.yaml
+          # Get the rollout configuration data
+          kubectl get configmap argocd-rollout-config -n {{ .Release.Namespace }} -o yaml > /tmp/rollout-config.yaml
 
           # Update name to argocd-cm and remove metadata fields
-          sed -i 's/name: argocd-cm-rollout-patch/name: argocd-cm/' /tmp/rollout-patch.yaml
-          sed -i '/^  uid:/d; /^  resourceVersion:/d; /^  creationTimestamp:/d; /^  selfLink:/d' /tmp/rollout-patch.yaml
+          sed -i 's/name: argocd-rollout-config/name: argocd-cm/' /tmp/rollout-config.yaml
+          sed -i '/^  uid:/d; /^  resourceVersion:/d; /^  creationTimestamp:/d; /^  selfLink:/d' /tmp/rollout-config.yaml
 
           # Apply with server-side apply to merge with official chart's ConfigMap
           kubectl apply --server-side --force-conflicts \
-            -f /tmp/rollout-patch.yaml \
+            -f /tmp/rollout-config.yaml \
             --field-manager=argocd-chart
 
           echo "Rollout configuration merged into official ArgoCD ConfigMap"
