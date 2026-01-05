@@ -1,0 +1,17 @@
+{{- if .Values.rollouts.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rollout-config-hook
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "argocd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rollout-config
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "patch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "patch"]
+{{- end }}

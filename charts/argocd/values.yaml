@@ -62,6 +62,11 @@ healthCheck:
 # When enabled=true, Rollout configs are automatically applied
 rollouts:
   enabled: false
+  # Kubectl image for the rollout config hook job
+  kubectlImage:
+    repository: cgr.dev/chainguard/kubectl
+    tag: "latest"  # Consider using a specific version tag or digest for production
+    pullPolicy: Always  # Use Always with latest tag to get updates
 
 # Argo Rollouts chart configuration (passed to argo-rollouts dependency)
 # Uses official Argo Rollouts Helm chart from https://argoproj.github.io/argo-helm
