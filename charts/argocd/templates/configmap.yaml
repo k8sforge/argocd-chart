@@ -1,0 +1,70 @@
+{{- if .Values.rollouts.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm-rollout-patch
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "argocd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rollout-config
+data:
+  application.types: rollout.argoproj.io
+  resource.customizations: |
+{{- include "argocd.rolloutHealthLua" . | nindent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: argocd-rollout-config-{{ .Release.Revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "argocd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rollout-config
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        {{- include "argocd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: rollout-config
+    spec:
+      serviceAccountName: default
+      restartPolicy: OnFailure
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Applying Rollout configuration to ArgoCD ConfigMap..."
+
+          # Wait for official argo-cd chart to create argocd-cm ConfigMap
+          until kubectl get configmap argocd-cm -n {{ .Release.Namespace }} &>/dev/null; do
+            echo "Waiting for official ArgoCD ConfigMap..."
+            sleep 2
+          done
+
+          # Get the rollout patch data
+          kubectl get configmap argocd-cm-rollout-patch -n {{ .Release.Namespace }} -o yaml > /tmp/rollout-patch.yaml
+
+          # Update name to argocd-cm and remove metadata fields
+          sed -i 's/name: argocd-cm-rollout-patch/name: argocd-cm/' /tmp/rollout-patch.yaml
+          sed -i '/^  uid:/d; /^  resourceVersion:/d; /^  creationTimestamp:/d; /^  selfLink:/d' /tmp/rollout-patch.yaml
+
+          # Apply with server-side apply to merge with official chart's ConfigMap
+          kubectl apply --server-side --force-conflicts \
+            -f /tmp/rollout-patch.yaml \
+            --field-manager=argocd-chart
+
+          echo "Rollout configuration merged into official ArgoCD ConfigMap"
+          echo "Restarting ArgoCD server to apply changes..."
+          kubectl rollout restart deployment argocd-server -n {{ .Release.Namespace }} || true
+          echo "Rollout support configured successfully"
+{{- end }}

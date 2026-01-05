@@ -1,0 +1,29 @@
+apiVersion: v2
+name: argocd
+description: A Helm chart for deploying ArgoCD on Kubernetes
+type: application
+version: 0.1.1
+appVersion: "latest"
+icon: https://avatars.githubusercontent.com/u/30269780
+keywords:
+  - argocd
+  - gitops
+  - continuous-delivery
+  - kubernetes
+maintainers:
+  - name: k8sforge
+home: https://github.com/k8sforge/argocd-chart
+sources:
+  - https://github.com/argoproj/argo-cd
+  - https://github.com/argoproj/argo-helm
+  - https://github.com/k8sforge/argocd-chart
+
+dependencies:
+  - name: argo-cd
+    version: "9.2.4"
+    repository: "https://argoproj.github.io/argo-helm"
+    condition: argocd.enabled
+  - name: argo-rollouts
+    version: "2.40.5"
+    repository: "https://argoproj.github.io/argo-helm"
+    condition: rollouts.enabled
