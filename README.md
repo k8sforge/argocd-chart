@@ -119,7 +119,7 @@ The following table lists the main configurable parameters:
 | `podDisruptionBudget.enabled` | Enable PodDisruptionBudget for HA | `false` |
 | `resources.*` | Resource requests/limits per component | See values.yaml |
 
-See [values.yaml](values.yaml) for the full configuration.
+See [values.yaml](charts/argocd/values.yaml) for the full configuration.
 
 ---
 
@@ -353,19 +353,23 @@ GitHub Actions will automatically publish the chart to:
 ### Lint
 
 ```bash
-helm lint .
+helm lint charts/argocd
 ```
 
-### Dry-run
+### Dry-run (requires cluster connection)
 
 ```bash
-helm install my-argocd . --dry-run --debug
+helm install my-argocd charts/argocd --dry-run --debug
 ```
 
-### Render templates
+### Render templates (no cluster required)
 
 ```bash
-helm template my-argocd . -f values.yaml
+# Render templates without connecting to cluster
+helm template my-argocd charts/argocd
+
+# Or with custom values
+helm template my-argocd charts/argocd -f values.yaml
 ```
 
 ### Update dependencies
